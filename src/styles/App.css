@@ -1,0 +1,15 @@
+.App {
+  width: 660px;
+  box-sizing: content-box;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.box {
+  display: flex;
+  flex-direction: row;
+  width: 100px;
+  height: 100px;
+  background-color: green;
+  border: 5px solid black;
+}
