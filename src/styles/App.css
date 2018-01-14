@@ -1,6 +1,13 @@
 .App {
   font-family: 'Black Ops One', cursive;
   box-sizing: content-box;
+}
+
+.title {
+  text-align: center;
+}
+
+.boards-container {
   display: flex;
   align-items: center;
   flex-direction: column;
