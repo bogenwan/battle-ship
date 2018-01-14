@@ -1,15 +1,47 @@
 .App {
-  width: 660px;
+  font-family: 'Black Ops One', cursive;
   box-sizing: content-box;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.opponent-board-container {
+  width: 342px;
   display: flex;
   flex-wrap: wrap;
 }
 
-.box {
+.opponent-box-container {
   display: flex;
   flex-direction: row;
-  width: 100px;
-  height: 100px;
+  width: 50px;
+  height: 50px;
   background-color: green;
-  border: 5px solid black;
+  border: 2px solid black;
 }
+
+.opponent-box-container:hover {
+  background-color: green;
+  opacity: 0.5;
+}
+
+.opponent-box-container:active {
+  background-color: red;
+}
+
+.player-board-container {
+  width: 342px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.player-box-container {
+  display: flex;
+  flex-direction: row;
+  width: 50px;
+  height: 50px;
+  background-color: green;
+  border: 2px solid black;
+}
+
