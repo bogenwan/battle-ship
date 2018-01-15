@@ -3,7 +3,7 @@ import '../styles/App.css';
 
 const PlayerBox = (props) => {
   return (
-    <div className="player-box-container" onClick={() => {props.getIndex(props.i)}}>
+    <div className="player-box-container" onClick={() => {props.addShipToMap(props.i)}}>
       <div className="player-box">
 
       </div>

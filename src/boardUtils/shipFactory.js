@@ -1,7 +1,10 @@
-const Ship = (size) => {
-  this.size = size;
-  this.life = size;
-  this.position = [];
+class Ship {
+  constructor (size, name) {
+    this.name = name;
+    this.size = size;
+    this.life = size;
+    this.position = [];
+  };
 };
 
 module.exports = {
