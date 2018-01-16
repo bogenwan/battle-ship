@@ -43,9 +43,9 @@ class App extends Component {
 
   addShipToMap (coordinates) {
     let typeOfShip = this.state.whatTypeOfShip;
-    console.log(coordinates)
     if ((this.state.direction === 'vertical' && coordinates[0] + this.state[`${typeOfShip}`].size - 1 > boardMatrix.length - 1) || (this.state.direction === 'horizontal' && coordinates[1] + this.state[`${typeOfShip}`].size - 1 > boardMatrix.length - 1)) {
       window.alert('Ship placement is out of board size, Please select another box!');
+      return;
     }
     let copiedShip = Object.assign({}, this.state[typeOfShip]);
     let copyPlayerShipsCoordinates = [];
@@ -81,6 +81,7 @@ class App extends Component {
     } else {
       window.alert(`You have added the max amount of ${typeOfShip}, please choose another ship!`);
     }
+    console.log('YOOOOOO')
   };
 
   render () {
@@ -110,6 +111,7 @@ class App extends Component {
                 boardMatrix.map((colBox, index2) =>
                   <PlayerBox
                   key={index2}
+                  playerShipsCoordinates={this.state.playerShipsCoordinates}
                   i={[index1, index2]}
                   addShipToMap={this.addShipToMap}
                   getIndex={this.getIndex}
