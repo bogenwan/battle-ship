@@ -1,4 +1,6 @@
 .App {
+/*  background-image: url(../battleship.jpg);
+  background-repeat: no-repeat;*/
   font-family: 'Black Ops One', cursive;
   box-sizing: content-box;
 }
@@ -17,6 +19,7 @@
   width: 342px;
   display: flex;
   flex-wrap: wrap;
+  background-color: white;
 }
 
 .opponent-box-container {

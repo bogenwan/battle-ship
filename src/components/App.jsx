@@ -21,8 +21,10 @@ class App extends Component {
       addShip: false,
       whatTypeOfShip: '',
       playerShipsCoordinates: [],
-      enemyShipsCoordinates: [[0, 1], [0, 2], [0, 3]],
-      myTurn: false
+      enemyShipsCoordinates: [[0, 1], [0, 2], [0, 3], [2, 2], [3, 2], [4, 2], [5, 2]],
+      hitAndMissStorage: {},
+      myTurn: false,
+      attackStatus: ''
     };
 
     this.fireShots = this.fireShots.bind(this);
@@ -37,9 +39,6 @@ class App extends Component {
   };
 
   containCoordinates (enemyShipList, currCoord) {
-    console.log(JSON.stringify(currCoord))
-    console.log(JSON.stringify(enemyShipList[0]))
-    console.log()
     return enemyShipList.some(eachCoord => JSON.stringify(eachCoord) === JSON.stringify(currCoord));
   }
 
@@ -113,15 +112,26 @@ class App extends Component {
   };
 
   fireShots (coordinates) {
-    console.log('this is index', coordinates);
+    let copyHitAndMissStorage = Object.assign({}, this.state.hitAndMissStorage);
     if (this.containCoordinates(this.state.enemyShipsCoordinates, coordinates)) {
       console.log('hit!')
+      copyHitAndMissStorage[JSON.stringify(coordinates)] = 'hit';
+      this.setState({
+        attackStatus: 'HIT!',
+        hitAndMissStorage: copyHitAndMissStorage
+      });
     } else {
       console.log('miss!')
+      copyHitAndMissStorage[JSON.stringify(coordinates)] = 'miss';
+      this.setState({
+        attackStatus: "MISS!",
+        hitAndMissStorage: copyHitAndMissStorage
+      });
     }
   };
 
   render () {
+    console.log(this.state.hitAndMissStorage);
     return (
       <div className="App">
         <h1 className="title">BATTLE SHIP</h1>
@@ -135,6 +145,7 @@ class App extends Component {
                   key={index2}
                   i={[index1, index2]}
                   fireShots={this.fireShots}
+                  hitAndMissStorage={this.state.hitAndMissStorage}
                   />
                 )
               )
