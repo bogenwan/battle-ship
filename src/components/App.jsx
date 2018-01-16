@@ -15,6 +15,7 @@ class App extends Component {
       cruiserCount: 1,
       destroyer: new Ship(4, 'destroyer'),
       destroyerCount: 1,
+      collide: false,
       fleet: 0,
       direction: '',
       addShip: false,
@@ -33,6 +34,10 @@ class App extends Component {
     console.log('this is index', e);
   };
 
+  checkShipOverlap (shipsCoord, currCoord) {
+    return shipsCoord.some(eachCoord => JSON.stringify(eachCoord) === JSON.stringify(currCoord));
+  };
+
   setShipDirection (direction, shipType) {
     this.setState({
       direction: direction,
@@ -49,19 +54,40 @@ class App extends Component {
     }
     let copiedShip = Object.assign({}, this.state[typeOfShip]);
     let copyPlayerShipsCoordinates = [];
+    let collide = false;
     if (this.state[`${typeOfShip}Count`] > 0) {
-      for (let i = 0; i < copiedShip.size; i++) {
         if (this.state.direction === 'vertical') {
           console.log('in vertical ADD')
-          copiedShip.position.push([coordinates[0] + i, coordinates[1]]);
-          copyPlayerShipsCoordinates.push([coordinates[0] + i, coordinates[1]]);
+          for (let i = 0; i < copiedShip.size; i++) {
+            if (this.checkShipOverlap(this.state.playerShipsCoordinates, [coordinates[0] + i, coordinates[1]])) {
+              window.alert('Can\'t have ship placement overlap another ship, please select another box!');
+              collide = true;
+              break;
+            }
+          }
+          if (!collide) {
+            for (let j = 0; j < copiedShip.size; j++) {
+              copiedShip.position.push([coordinates[0] + j, coordinates[1]]);
+              copyPlayerShipsCoordinates.push([coordinates[0] + j, coordinates[1]]);
+            }
+          }
         } else if (this.state.direction === 'horizontal') {
           console.log('in horizontal ADD')
-          copiedShip.position.push([coordinates[0], coordinates[1] + i]);
-          copyPlayerShipsCoordinates.push([coordinates[0], coordinates[1] + i]);
+          for (let i = 0; i < copiedShip.size; i++) {
+            if (this.checkShipOverlap(this.state.playerShipsCoordinates, [coordinates[0], coordinates[1] + i])) {
+              window.alert('Can\'t have ship placement overlap another ship, please select another box!');
+              collide = true;
+              break;
+            }
+          }
+          if (!collide) {
+            for (let j = 0; j < copiedShip.size; j++) {
+              copiedShip.position.push([coordinates[0], coordinates[1] + j]);
+              copyPlayerShipsCoordinates.push([coordinates[0], coordinates[1] + j]);
+            }
+          }
         }
-      }
-      if (typeOfShip === 'cruiser') {
+      if (typeOfShip === 'cruiser' && copiedShip.position.length !== 0) {
         this.setState({
           cruiserCount: this.state.cruiserCount - 1,
           fleet: this.state.fleet + 1,
@@ -69,7 +95,7 @@ class App extends Component {
           addShip: false,
           playerShipsCoordinates: [...this.state.playerShipsCoordinates, ...copyPlayerShipsCoordinates]
         });
-      } else if (typeOfShip === 'destroyer') {
+      } else if (typeOfShip === 'destroyer' && copiedShip.position.length !== 0) {
         this.setState({
           destroyerCount: this.state.destroyerCount - 1,
           fleet: this.state.fleet + 1,
@@ -81,7 +107,6 @@ class App extends Component {
     } else {
       window.alert(`You have added the max amount of ${typeOfShip}, please choose another ship!`);
     }
-    console.log('YOOOOOO')
   };
 
   render () {
