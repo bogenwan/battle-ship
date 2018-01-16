@@ -12,31 +12,36 @@ class App extends Component {
 
     this.state = {
       cruiser: new Ship(3, 'cruiser'),
-      cruiserCount: 1,
+      cruiserCount: 3,
       destroyer: new Ship(4, 'destroyer'),
-      destroyerCount: 1,
+      destroyerCount: 2,
       collide: false,
       fleet: 0,
       direction: '',
       addShip: false,
       whatTypeOfShip: '',
       playerShipsCoordinates: [],
-      enemyShipsCoordinates: [],
+      enemyShipsCoordinates: [[0, 1], [0, 2], [0, 3]],
       myTurn: false
     };
 
-    this.getIndex = this.getIndex.bind(this);
+    this.fireShots = this.fireShots.bind(this);
     this.setShipPosition = this.setShipDirection.bind(this);
     this.addShipToMap = this.addShipToMap.bind(this);
+    this.fireShots = this.fireShots.bind(this);
   };
 
-  getIndex (e) {
-    console.log('this is index', e);
-  };
 
-  checkShipOverlap (shipsCoord, currCoord) {
+  shipIntersectCheck (shipsCoord, currCoord) {
     return shipsCoord.some(eachCoord => JSON.stringify(eachCoord) === JSON.stringify(currCoord));
   };
+
+  containCoordinates (enemyShipList, currCoord) {
+    console.log(JSON.stringify(currCoord))
+    console.log(JSON.stringify(enemyShipList[0]))
+    console.log()
+    return enemyShipList.some(eachCoord => JSON.stringify(eachCoord) === JSON.stringify(currCoord));
+  }
 
   setShipDirection (direction, shipType) {
     this.setState({
@@ -57,9 +62,8 @@ class App extends Component {
     let collide = false;
     if (this.state[`${typeOfShip}Count`] > 0) {
         if (this.state.direction === 'vertical') {
-          console.log('in vertical ADD')
           for (let i = 0; i < copiedShip.size; i++) {
-            if (this.checkShipOverlap(this.state.playerShipsCoordinates, [coordinates[0] + i, coordinates[1]])) {
+            if (this.shipIntersectCheck(this.state.playerShipsCoordinates, [coordinates[0] + i, coordinates[1]])) {
               window.alert('Can\'t have ship placement overlap another ship, please select another box!');
               collide = true;
               break;
@@ -72,9 +76,8 @@ class App extends Component {
             }
           }
         } else if (this.state.direction === 'horizontal') {
-          console.log('in horizontal ADD')
           for (let i = 0; i < copiedShip.size; i++) {
-            if (this.checkShipOverlap(this.state.playerShipsCoordinates, [coordinates[0], coordinates[1] + i])) {
+            if (this.shipIntersectCheck(this.state.playerShipsCoordinates, [coordinates[0], coordinates[1] + i])) {
               window.alert('Can\'t have ship placement overlap another ship, please select another box!');
               collide = true;
               break;
@@ -109,8 +112,16 @@ class App extends Component {
     }
   };
 
+  fireShots (coordinates) {
+    console.log('this is index', coordinates);
+    if (this.containCoordinates(this.state.enemyShipsCoordinates, coordinates)) {
+      console.log('hit!')
+    } else {
+      console.log('miss!')
+    }
+  };
+
   render () {
-    console.log(this.state)
     return (
       <div className="App">
         <h1 className="title">BATTLE SHIP</h1>
@@ -122,8 +133,8 @@ class App extends Component {
                 boardMatrix.map((colBox, index2) =>
                   <OpponentBox
                   key={index2}
-                  i={JSON.stringify([index1, index2])}
-                  getIndex={this.getIndex}
+                  i={[index1, index2]}
+                  fireShots={this.fireShots}
                   />
                 )
               )
@@ -139,7 +150,7 @@ class App extends Component {
                   playerShipsCoordinates={this.state.playerShipsCoordinates}
                   i={[index1, index2]}
                   addShipToMap={this.addShipToMap}
-                  getIndex={this.getIndex}
+                  fireShots={this.fireShots}
                   />
                 )
               )
@@ -148,12 +159,13 @@ class App extends Component {
         </div>
         <div className="ship-select-container">
           <div>
-            <h3>Cruiser</h3>
+            <h2>Place your ships</h2>
+            <h3>Cruiser x {`${this.state.cruiserCount}`}</h3>
             <input type="button" ref="vertical" value="vertical" onClick={() => this.setShipDirection('vertical', 'cruiser')} />
             <input type="button" ref="horizontal" value="horizontal" onClick={() => this.setShipDirection('horizontal', 'cruiser')} />
           </div>
           <div>
-            <h3>Destroyer</h3>
+            <h3>Destroyer x {`${this.state.destroyerCount}`}</h3>
             <input type="button" ref="vertical" value="vertical" onClick={() => this.setShipDirection('vertical', 'destroyer')} />
             <input type="button" ref="horizontal" value="horizontal" onClick={() => this.setShipDirection('horizontal', 'destroyer')} />
           </div>

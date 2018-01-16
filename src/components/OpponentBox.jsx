@@ -3,7 +3,7 @@ import '../styles/App.css';
 
 const OpponentBox = (props) => {
   return (
-    <div className="opponent-box-container" onClick={() => {props.getIndex(props.i)}}>
+    <div className="opponent-box-container" onClick={() => {props.fireShots(props.i)}}>
       <div className="opponent-box">
 
       </div>
