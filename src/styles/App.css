@@ -41,6 +41,28 @@
   background-color: red;
 }
 
+.opponent-box-container-hit {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  background-color: red;
+  border: 2px solid black;
+}
+
+.opponent-box-container-miss {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  background-color: yellow;
+  border: 2px solid black;
+}
+
 .player-board-container {
   width: 342px;
   display: flex;
