@@ -3,6 +3,7 @@ import '../styles/App.css';
 import OpponentBox from './OpponentBox.jsx';
 import PlayerBox from './PlayerBox.jsx';
 import { Ship } from '../boardUtils/shipFactory.js';
+import _ from 'lodash';
 
 let boardMatrix = [1, 2, 3, 4, 5, 6];
 
@@ -111,17 +112,28 @@ class App extends Component {
     }
   };
 
+  findIndexInEnemyShipList (list, coord) {
+    return _.findIndex(list, (item) => JSON.stringify(item) === JSON.stringify(coord));
+  };
+
   fireShots (coordinates) {
     let copyHitAndMissStorage = Object.assign({}, this.state.hitAndMissStorage);
+    let copyEnemyShipCoordinates = [...this.state.enemyShipsCoordinates];
+    console.log(copyEnemyShipCoordinates)
     if (this.containCoordinates(this.state.enemyShipsCoordinates, coordinates)) {
-      console.log('hit!')
+      console.log('hit!');
       copyHitAndMissStorage[JSON.stringify(coordinates)] = 'hit';
+      copyEnemyShipCoordinates.splice(this.findIndexInEnemyShipList(copyEnemyShipCoordinates, coordinates), 1);
       this.setState({
         attackStatus: 'HIT!',
-        hitAndMissStorage: copyHitAndMissStorage
+        hitAndMissStorage: copyHitAndMissStorage,
+        enemyShipsCoordinates: copyEnemyShipCoordinates
       });
+      if (copyEnemyShipCoordinates.length === 0) {
+        window.alert('You have sunk all enemy ship, you win!!');
+      }
     } else {
-      console.log('miss!')
+      console.log('miss!');
       copyHitAndMissStorage[JSON.stringify(coordinates)] = 'miss';
       this.setState({
         attackStatus: "MISS!",
