@@ -4,6 +4,9 @@ import OpponentBox from './OpponentBox.jsx';
 import PlayerBox from './PlayerBox.jsx';
 import { Ship } from '../boardUtils/shipFactory.js';
 import _ from 'lodash';
+import io from 'socket.io-client';
+
+var socket = io('/')
 
 let boardMatrix = [1, 2, 3, 4, 5, 6];
 
