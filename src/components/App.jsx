@@ -163,10 +163,14 @@ class App extends Component {
   };
 
   fireShots (coordinates) {
-    let fireData = {
-      coordinates,
-    };
-    socket.emit('fire', fireData);
+    if (this.state.enemyHitAndMissStorage[JSON.stringify(coordinates)]) {
+      window.alert('Commander you have already fire shot at this coordinates, please pick another coordinates!');
+    } else {
+      let fireData = {
+        coordinates,
+      };
+      socket.emit('fire', fireData);
+    }
   };
 
   gotHit (coordinates) {

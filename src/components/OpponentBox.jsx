@@ -13,7 +13,7 @@ const OpponentBox = (props) => {
   };
   if (checkIfBoxHit(props.enemyHitAndMissStorage, props.i) === 'hit') {
     return (
-      <div className="opponent-box-container-hit">
+      <div className="opponent-box-container-hit" onClick={_fireShots}>
         <div className="opponent-box">
           HIT!
         </div>
@@ -21,7 +21,8 @@ const OpponentBox = (props) => {
     )
   } else if (checkIfBoxHit(props.enemyHitAndMissStorage, props.i) === 'miss') {
     return (
-      <div className="opponent-box-container-miss">
+      <div className="opponent-box-container-miss"
+      onClick={_fireShots}>
         <div className="opponent-box">
           MISS!
         </div>
