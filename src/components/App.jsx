@@ -5,8 +5,8 @@ import PlayerBox from './PlayerBox.jsx';
 import { Ship } from '../boardUtils/shipFactory.js';
 import _ from 'lodash';
 import io from 'socket.io-client';
+var socket = io('/');
 
-var socket = io('/')
 
 let boardMatrix = [1, 2, 3, 4, 5, 6];
 
@@ -37,6 +37,9 @@ class App extends Component {
     this.fireShots = this.fireShots.bind(this);
   };
 
+  componentDidMount () {
+
+  };
 
   shipIntersectCheck (shipsCoord, currCoord) {
     return shipsCoord.some(eachCoord => JSON.stringify(eachCoord) === JSON.stringify(currCoord));
@@ -120,6 +123,10 @@ class App extends Component {
   };
 
   fireShots (coordinates) {
+    let fireData = {
+      coordinates,
+    };
+    socket.emit('fire', fireData);
     let copyHitAndMissStorage = Object.assign({}, this.state.hitAndMissStorage);
     let copyEnemyShipCoordinates = [...this.state.enemyShipsCoordinates];
     console.log(copyEnemyShipCoordinates)
@@ -146,54 +153,63 @@ class App extends Component {
   };
 
   render () {
-    console.log(this.state.hitAndMissStorage);
+    const _opponentBoard = boardMatrix.map((rowBox, index1) =>
+      boardMatrix.map((colBox, index2) =>
+        <OpponentBox
+        key={index2}
+        i={[index1, index2]}
+        fireShots={this.fireShots}
+        hitAndMissStorage={this.state.hitAndMissStorage}
+        />
+      )
+    );
+    const _playerBoard = boardMatrix.map((rowBox, index1) =>
+      boardMatrix.map((colBox, index2) =>
+        <PlayerBox
+        key={index2}
+        playerShipsCoordinates={this.state.playerShipsCoordinates}
+        i={[index1, index2]}
+        addShipToMap={this.addShipToMap}
+        fireShots={this.fireShots}
+        />
+      )
+    );
+    const _crusierVertical = () => {
+      this.setShipDirection('vertical', 'cruiser');
+    };
+    const _cruiserHorizontal = () => {
+      this.setShipDirection('horizontal', 'cruiser');
+    };
+    const _destroyerVertical = () => {
+      this.setShipDirection('vertical', 'destroyer');
+    };
+    const _destroyerHorizontal = () => {
+      this.setShipDirection('horizontal', 'destroyer');
+    };
     return (
       <div className="App">
         <h1 className="title">BATTLE SHIP</h1>
         <div className="boards-container">
           <h1>OPPONENT'S MAP</h1>
           <div className="opponent-board-container">
-            {
-              boardMatrix.map((rowBox, index1) =>
-                boardMatrix.map((colBox, index2) =>
-                  <OpponentBox
-                  key={index2}
-                  i={[index1, index2]}
-                  fireShots={this.fireShots}
-                  hitAndMissStorage={this.state.hitAndMissStorage}
-                  />
-                )
-              )
-            }
+            {_opponentBoard}
           </div>
           <h1>YOUR MAP</h1>
           <div className="player-board-container">
-            {
-              boardMatrix.map((rowBox, index1) =>
-                boardMatrix.map((colBox, index2) =>
-                  <PlayerBox
-                  key={index2}
-                  playerShipsCoordinates={this.state.playerShipsCoordinates}
-                  i={[index1, index2]}
-                  addShipToMap={this.addShipToMap}
-                  fireShots={this.fireShots}
-                  />
-                )
-              )
-            }
+            {_playerBoard}
           </div>
         </div>
         <div className="ship-select-container">
           <div>
             <h2>Place your ships</h2>
             <h3>Cruiser x {`${this.state.cruiserCount}`}</h3>
-            <input type="button" ref="vertical" value="vertical" onClick={() => this.setShipDirection('vertical', 'cruiser')} />
-            <input type="button" ref="horizontal" value="horizontal" onClick={() => this.setShipDirection('horizontal', 'cruiser')} />
+            <input type="button" ref="vertical" value="vertical" onClick={_crusierVertical} />
+            <input type="button" ref="horizontal" value="horizontal" onClick={_cruiserHorizontal} />
           </div>
           <div>
             <h3>Destroyer x {`${this.state.destroyerCount}`}</h3>
-            <input type="button" ref="vertical" value="vertical" onClick={() => this.setShipDirection('vertical', 'destroyer')} />
-            <input type="button" ref="horizontal" value="horizontal" onClick={() => this.setShipDirection('horizontal', 'destroyer')} />
+            <input type="button" ref="vertical" value="vertical" onClick={_destroyerVertical} />
+            <input type="button" ref="horizontal" value="horizontal" onClick={_destroyerHorizontal} />
           </div>
         </div>
       </div>

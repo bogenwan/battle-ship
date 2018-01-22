@@ -8,10 +8,12 @@ const checkIfBoxHit = (storageObj, currCoord) => {
 };
 
 const OpponentBox = (props) => {
-  console.log(checkIfBoxHit(props.hitAndMissStorage, props.i));
+  const _fireShots = () => {
+    props.fireShots(props.i);
+  };
   if (checkIfBoxHit(props.hitAndMissStorage, props.i) === 'hit') {
     return (
-      <div className="opponent-box-container-hit" onClick={() => {props.fireShots(props.i)}}>
+      <div className="opponent-box-container-hit">
         <div className="opponent-box">
           HIT!
         </div>
@@ -19,7 +21,7 @@ const OpponentBox = (props) => {
     )
   } else if (checkIfBoxHit(props.hitAndMissStorage, props.i) === 'miss') {
     return (
-      <div className="opponent-box-container-miss" onClick={() => {props.fireShots(props.i)}}>
+      <div className="opponent-box-container-miss">
         <div className="opponent-box">
           MISS!
         </div>
@@ -27,7 +29,7 @@ const OpponentBox = (props) => {
     )
   } else {
     return (
-      <div className="opponent-box-container" onClick={() => {props.fireShots(props.i)}}>
+      <div className="opponent-box-container" onClick={_fireShots}>
         <div className="opponent-box">
 
         </div>
