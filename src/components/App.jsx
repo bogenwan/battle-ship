@@ -29,7 +29,8 @@ class App extends Component {
       enemyShipsCoordinates: [],
       playerHitAndMissStorage: {},
       enemyHitAndMissStorage: {},
-      myTurn: false,
+      initSetUp: true,
+      player: '',
       attackStatus: ''
     };
 
@@ -40,6 +41,7 @@ class App extends Component {
     this.gotHit = this.gotHit.bind(this);
     this.renderHitEnemyBoard = this.renderHitEnemyBoard.bind(this);
     this.renderMissEnemyBoard = this.renderMissEnemyBoard.bind(this);
+    this.initialSetSup = this.initialSetSup.bind(this);
   };
 
   componentDidMount () {
@@ -51,11 +53,25 @@ class App extends Component {
       this.renderHitEnemyBoard(msg.coordinates);
     });
     socket.on('landedHit', msg => {
+      window.alert(msg.enemyHitMsg);
       this.renderHitEnemyBoard(msg.coordinates);
     });
     socket.on('noHit', msg => {
+      window.alert(msg.enemyMissMsg);
       this.renderMissEnemyBoard(msg.coordinates);
     });
+    this.initialSetSup();
+  };
+
+  initialSetSup () {
+    if (this.state.initSetUp) {
+      window.alert('Welcome to BATTLE SHIP Commander! Please select your ship from cruiser or destroyer and place them on to YOUR MAP.');
+      this.setState({
+        initSetUp: false
+      })
+    } else {
+      return null;
+    }
   };
 
   shipIntersectCheck (shipsCoord, currCoord) {
@@ -77,7 +93,7 @@ class App extends Component {
   addShipToMap (coordinates) {
     let typeOfShip = this.state.whatTypeOfShip;
     if ((this.state.direction === 'vertical' && coordinates[0] + this.state[`${typeOfShip}`].size - 1 > boardMatrix.length - 1) || (this.state.direction === 'horizontal' && coordinates[1] + this.state[`${typeOfShip}`].size - 1 > boardMatrix.length - 1)) {
-      window.alert('Ship placement is out of board size, Please select another box!');
+      window.alert('Commander, ship placement is out of board size, Please select another box!');
       return;
     }
     let copiedShip = Object.assign({}, this.state[typeOfShip]);
@@ -88,7 +104,7 @@ class App extends Component {
         if (this.state.direction === 'vertical') {
           for (let i = 0; i < copiedShip.size; i++) {
             if (this.shipIntersectCheck(this.state.playerShipsCoordinates, [coordinates[0] + i, coordinates[1]])) {
-              window.alert('Can\'t have ship placement overlap another ship, please select another box!');
+              window.alert('Commander, we can\'t have ship placement overlap another ship, please select another box!');
               collide = true;
               break;
             }
@@ -103,7 +119,7 @@ class App extends Component {
         } else if (this.state.direction === 'horizontal') {
           for (let i = 0; i < copiedShip.size; i++) {
             if (this.shipIntersectCheck(this.state.playerShipsCoordinates, [coordinates[0], coordinates[1] + i])) {
-              window.alert('Can\'t have ship placement overlap another ship, please select another box!');
+              window.alert('Commander, we can\'t have ship placement overlap another ship, please select another box!');
               collide = true;
               break;
             }
@@ -135,8 +151,10 @@ class App extends Component {
           playerShipsTracker: [...this.state.playerShipsTracker, ...copyPlayerShipsTracker]
         });
       }
+    } else if (this.state.cruiserCount === 0 && this.state.destroyerCount === 0) {
+      window.alert('Commander, you have placed all available ships in play, now flip a coin and decide which player fires first, GOOD LUCK!');
     } else {
-      window.alert(`You have added the max amount of ${typeOfShip}, please choose another ship!`);
+      window.alert(`Commander, you have place the max amount of ${typeOfShip}, please choose another ship!`);
     }
   };
 
@@ -164,15 +182,15 @@ class App extends Component {
         playerShipsTracker: copyPlayerShipsTracker
       });
       if (copyPlayerShipsTracker.length === 0) {
-        window.alert('All your ship sunk, YOU LOOSE!');
+        window.alert('Commander all your ships have been sunk by our enemy, YOU LOOSE!');
         let enemyWinMsg = {
-          enemyWinMsg: 'you sunk all enemy ships, YOU WIN!',
+          enemyWinMsg: 'Commander, you have sunk all our enemy\'s ships, YOU WIN!',
           coordinates,
         };
         socket.emit('youWin', enemyWinMsg);
       } else {
         let enemyHitMsg = {
-          enemyHitMsg: 'you landed a hit!',
+          enemyHitMsg: 'Commander, you landed a hit on enemy\'s ship!',
           coordinates,
         };
         socket.emit('landedHit', enemyHitMsg);
@@ -186,7 +204,7 @@ class App extends Component {
         playerShipsTracker: copyPlayerShipsTracker
       });
       let enemyMissMsg = {
-        enemyMissMsg: 'you miss!',
+        enemyMissMsg: 'Commander, your shot missed!',
         coordinates,
       };
       socket.emit('noHit', enemyMissMsg);
@@ -256,15 +274,15 @@ class App extends Component {
           <div className="ship-select-container-item">
             <h3 className="ship-select-text">Cruiser x {`${this.state.cruiserCount}`}</h3>
             <div className="ship-input-container">
-              <input type="button" ref="vertical" value="vertical" onClick={_crusierVertical} />
-              <input type="button" ref="horizontal" value="horizontal" onClick={_cruiserHorizontal} />
+              <input className="input-button" type="button" ref="vertical" value="vertical" onClick={_crusierVertical} />
+              <input className="input-button" type="button" ref="horizontal" value="horizontal" onClick={_cruiserHorizontal} />
             </div>
           </div>
           <div className="ship-select-container-item">
             <h3 className="ship-select-text">Destroyer x {`${this.state.destroyerCount}`}</h3>
             <div className="ship-input-container">
-              <input type="button" ref="vertical" value="vertical" onClick={_destroyerVertical} />
-              <input type="button" ref="horizontal" value="horizontal" onClick={_destroyerHorizontal} />
+              <input className="input-button" type="button" ref="vertical" value="vertical" onClick={_destroyerVertical} />
+              <input className="input-button" type="button" ref="horizontal" value="horizontal" onClick={_destroyerHorizontal} />
             </div>
           </div>
         </div>
