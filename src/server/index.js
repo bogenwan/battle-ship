@@ -2,13 +2,15 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
 
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: false }));
 
 // parse application/json
-app.use(bodyParser.json())
+app.use(bodyParser.json());
+
+app.use(express.static(__dirname, + '../../public'));
 
 app.get('/', function (req, res) {
   res.json('Welcome to battle ship!')
@@ -18,14 +20,14 @@ io.on('connection', function (socket) {
   console.log('a user socket connected!');
 
   socket.on('fire', (fireData) => {
-    socket.emit('fire', {
+    socket.broadcast.emit('fire', {
       coordinates: fireData.coordinates,
       from: socket.id.slice(8)
     });
   });
 
   socket.on('youWin', (msg) => {
-    socket.emit('youWin', {
+    socket.broadcast.emit('youWin', {
       enemyWinMsg: msg.enemyWinMsg,
       coordinates:msg.coordinates,
       from: socket.id.slice(8)
@@ -33,7 +35,7 @@ io.on('connection', function (socket) {
   });
 
   socket.on('landedHit', (msg) => {
-    socket.emit('landedHit', {
+    socket.broadcast.emit('landedHit', {
       enemyHitMsg: msg.enemyHitMsg,
       coordinates: msg.coordinates,
       from: socket.id.slice(8)
@@ -41,7 +43,7 @@ io.on('connection', function (socket) {
   });
 
   socket.on('noHit', (msg) => {
-    socket.emit('noHit', {
+    socket.broadcast.emit('noHit', {
       enemyMissMsg: msg.enemyMissMsg,
       coordinates: msg.coordinates,
       from: socket.id.slice(8)

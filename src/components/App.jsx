@@ -211,31 +211,6 @@ class App extends Component {
     });
   };
 
-  // hitOrMissHandler (coordinates) {
-  //   let copyEnemyHitAndMissStorage = Object.assign({}, this.state.enemyHitAndMissStorage);
-  //   let copyEnemyShipCoordinates = [...this.state.enemyShipsCoordinates];
-  //   if (this.containCoordinates(this.state.enemyShipsCoordinates, coordinates)) {
-  //     console.log('hit!');
-  //     copyEnemyHitAndMissStorage[JSON.stringify(coordinates)] = 'hit';
-  //     copyEnemyShipCoordinates.splice(this.findIndexInShipList(copyEnemyShipCoordinates, coordinates), 1);
-  //     this.setState({
-  //       attackStatus: 'HIT!',
-  //       enemyHitAndMissStorage: copyEnemyHitAndMissStorage,
-  //       enemyShipsCoordinates: copyEnemyShipCoordinates
-  //     });
-  //     if (copyEnemyShipCoordinates.length === 0) {
-  //       window.alert('You have sunk all enemy ship, you win!!');
-  //     }
-  //   } else {
-  //     console.log('miss!');
-  //     copyEnemyHitAndMissStorage[JSON.stringify(coordinates)] = 'miss';
-  //     this.setState({
-  //       attackStatus: "MISS!",
-  //       enemyHitAndMissStorage: copyEnemyHitAndMissStorage
-  //     });
-  //   }
-  // };
-
   render () {
     const _opponentBoard = boardMatrix.map((rowBox, index1) =>
       boardMatrix.map((colBox, index2) =>
