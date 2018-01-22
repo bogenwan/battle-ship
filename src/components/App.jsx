@@ -7,7 +7,7 @@ import _ from 'lodash';
 import io from 'socket.io-client';
 let socket = io('/');
 
-
+// matrix size
 let boardMatrix = [1, 2, 3, 4, 5, 6];
 
 class App extends Component {
@@ -63,6 +63,7 @@ class App extends Component {
     this.initialSetSup();
   };
 
+  // check if this initial set up for players
   initialSetSup () {
     if (this.state.initSetUp) {
       window.alert('Welcome to BATTLE SHIP Commander! Please select your ship from cruiser or destroyer and place them on to YOUR MAP.');
@@ -78,6 +79,7 @@ class App extends Component {
     return shipsCoord.some(eachCoord => JSON.stringify(eachCoord) === JSON.stringify(currCoord));
   };
 
+  // check if coordinate exist in enemy ship list
   containCoordinates (enemyShipList, currCoord) {
     return enemyShipList.some(eachCoord => JSON.stringify(eachCoord) === JSON.stringify(currCoord));
   }
@@ -92,6 +94,7 @@ class App extends Component {
 
   addShipToMap (coordinates) {
     let typeOfShip = this.state.whatTypeOfShip;
+    // check if ship placement is with-in the board
     if ((this.state.direction === 'vertical' && coordinates[0] + this.state[`${typeOfShip}`].size - 1 > boardMatrix.length - 1) || (this.state.direction === 'horizontal' && coordinates[1] + this.state[`${typeOfShip}`].size - 1 > boardMatrix.length - 1)) {
       window.alert('Commander, ship placement is out of board size, Please select another box!');
       return;
@@ -100,6 +103,7 @@ class App extends Component {
     let copyPlayerShipsTracker = [];
     let copyPlayerShipsCoordinates = [];
     let collide = false;
+    // check there is still allowable amount to place ships
     if (this.state[`${typeOfShip}Count`] > 0) {
         if (this.state.direction === 'vertical') {
           for (let i = 0; i < copiedShip.size; i++) {
@@ -109,6 +113,7 @@ class App extends Component {
               break;
             }
           }
+          // check if ships placement overlaps each other
           if (!collide) {
             for (let j = 0; j < copiedShip.size; j++) {
               copiedShip.position.push([coordinates[0] + j, coordinates[1]]);
@@ -116,6 +121,7 @@ class App extends Component {
               copyPlayerShipsTracker.push([coordinates[0] + j, coordinates[1]]);
             }
           }
+          // if placement is horizontal
         } else if (this.state.direction === 'horizontal') {
           for (let i = 0; i < copiedShip.size; i++) {
             if (this.shipIntersectCheck(this.state.playerShipsCoordinates, [coordinates[0], coordinates[1] + i])) {
@@ -132,6 +138,7 @@ class App extends Component {
             }
           }
         }
+        // if ship alrady existed in list, the just add on to it
       if (typeOfShip === 'cruiser' && copiedShip.position.length !== 0) {
         this.setState({
           cruiserCount: this.state.cruiserCount - 1,
@@ -141,6 +148,7 @@ class App extends Component {
           playerShipsCoordinates: [...this.state.playerShipsCoordinates, ...copyPlayerShipsCoordinates],
           playerShipsTracker: [...this.state.playerShipsTracker, ...copyPlayerShipsTracker]
         });
+        // if destroyer we it to list
       } else if (typeOfShip === 'destroyer' && copiedShip.position.length !== 0) {
         this.setState({
           destroyerCount: this.state.destroyerCount - 1,
@@ -151,9 +159,11 @@ class App extends Component {
           playerShipsTracker: [...this.state.playerShipsTracker, ...copyPlayerShipsTracker]
         });
       }
+      // check if player alrady added the max amount of ships in play
     } else if (this.state.cruiserCount === 0 && this.state.destroyerCount === 0) {
       window.alert('Commander, you have placed all available ships in play, now flip a coin and decide which player fires first, GOOD LUCK!');
     } else {
+      // if the amount of a specific ship used is maxed let user know to pick other type of ship
       window.alert(`Commander, you have place the max amount of ${typeOfShip}, please choose another ship!`);
     }
   };
@@ -173,6 +183,7 @@ class App extends Component {
     }
   };
 
+  // check is player's ship got hit
   gotHit (coordinates) {
     let copyPlayerHitAndMissStorage = Object.assign({}, this.state.playerHitAndMissStorage);
     let copyPlayerShipsTracker = [...this.state.playerShipsTracker];
@@ -185,6 +196,7 @@ class App extends Component {
         playerHitAndMissStorage: copyPlayerHitAndMissStorage,
         playerShipsTracker: copyPlayerShipsTracker
       });
+      // if ship list have no more ship then player loose the game
       if (copyPlayerShipsTracker.length === 0) {
         window.alert('Commander all your ships have been sunk by our enemy, YOU LOOSE!');
         let enemyWinMsg = {
@@ -200,6 +212,7 @@ class App extends Component {
         socket.emit('landedHit', enemyHitMsg);
       }
     } else {
+      // if player missed and didn't hti opponent
       console.log('enemy miss!');
       copyPlayerHitAndMissStorage[JSON.stringify(coordinates)] = 'miss';
       this.setState({
@@ -214,7 +227,7 @@ class App extends Component {
       socket.emit('noHit', enemyMissMsg);
     }
   };
-
+  // render all the markers for damage on opponent board
   renderHitEnemyBoard (coordinates) {
     let copyEnemyHitAndMissStorage = Object.assign({}, this.state.enemyHitAndMissStorage);
     copyEnemyHitAndMissStorage[JSON.stringify(coordinates)] = 'hit';
@@ -223,7 +236,7 @@ class App extends Component {
       enemyHitAndMissStorage: copyEnemyHitAndMissStorage
     });
   };
-
+  // render all miss markers for opponent board
   renderMissEnemyBoard (coordinates) {
     let copyEnemyHitAndMissStorage = Object.assign({}, this.state.enemyHitAndMissStorage);
     copyEnemyHitAndMissStorage[JSON.stringify(coordinates)] = 'miss';

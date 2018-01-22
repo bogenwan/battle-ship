@@ -5,6 +5,7 @@ const checkHasShipCoord = (shipCoords, boxCoord) => {
   return shipCoords.some(eachCoord => JSON.stringify(eachCoord) === JSON.stringify(boxCoord));
 };
 
+// check if own ship got damage
 const checkIfBoxHit = (storageObj, currCoord) => {
   if (storageObj[JSON.stringify(currCoord)]) {
     return storageObj[JSON.stringify(currCoord)];

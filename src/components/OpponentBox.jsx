@@ -1,6 +1,7 @@
 import React from 'react';
 import '../styles/App.css';
 
+// this function is to help check if this coordinate exist in hitAndMiss object to render component conditionaly
 const checkIfBoxHit = (storageObj, currCoord) => {
   if (storageObj[JSON.stringify(currCoord)]) {
     return storageObj[JSON.stringify(currCoord)];
