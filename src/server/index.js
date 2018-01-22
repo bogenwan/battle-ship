@@ -26,11 +26,27 @@ io.on('connection', function (socket) {
 
   socket.on('youWin', (msg) => {
     socket.emit('youWin', {
-      winMsg: msg.winMsg,
+      enemyWinMsg: msg.enemyWinMsg,
+      coordinates:msg.coordinates,
       from: socket.id.slice(8)
     });
   });
 
+  socket.on('landedHit', (msg) => {
+    socket.emit('landedHit', {
+      enemyHitMsg: msg.enemyHitMsg,
+      coordinates: msg.coordinates,
+      from: socket.id.slice(8)
+    });
+  });
+
+  socket.on('noHit', (msg) => {
+    socket.emit('noHit', {
+      enemyMissMsg: msg.enemyMissMsg,
+      coordinates: msg.coordinates,
+      from: socket.id.slice(8)
+    });
+  });
 
   socket.on('disconnect', function () {
     console.log('a user socket disconnected!');

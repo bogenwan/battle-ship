@@ -24,10 +24,11 @@ class App extends Component {
       direction: '',
       addShip: false,
       whatTypeOfShip: '',
+      playerShipsTracker: [],
       playerShipsCoordinates: [],
-      enemyShipsCoordinates: [[0, 1], [0, 2], [0, 3], [2, 2], [3, 2], [4, 2], [5, 2]],
+      enemyShipsCoordinates: [],
       playerHitAndMissStorage: {},
-      hitAndMissStorage: {},
+      enemyHitAndMissStorage: {},
       myTurn: false,
       attackStatus: ''
     };
@@ -37,13 +38,24 @@ class App extends Component {
     this.addShipToMap = this.addShipToMap.bind(this);
     this.fireShots = this.fireShots.bind(this);
     this.gotHit = this.gotHit.bind(this);
+    this.renderHitEnemyBoard = this.renderHitEnemyBoard.bind(this);
+    this.renderMissEnemyBoard = this.renderMissEnemyBoard.bind(this);
   };
 
   componentDidMount () {
     socket.on('fire', fireData => {
       this.gotHit(fireData.coordinates)
     });
-    socket.on('youWin', msg => window.alert(msg.winMsg));
+    socket.on('youWin', msg => {
+      window.alert(msg.enemyWinMsg)
+      this.renderHitEnemyBoard(msg.coordinates);
+    });
+    socket.on('landedHit', msg => {
+      this.renderHitEnemyBoard(msg.coordinates);
+    });
+    socket.on('noHit', msg => {
+      this.renderMissEnemyBoard(msg.coordinates);
+    });
   };
 
   shipIntersectCheck (shipsCoord, currCoord) {
@@ -69,6 +81,7 @@ class App extends Component {
       return;
     }
     let copiedShip = Object.assign({}, this.state[typeOfShip]);
+    let copyPlayerShipsTracker = [];
     let copyPlayerShipsCoordinates = [];
     let collide = false;
     if (this.state[`${typeOfShip}Count`] > 0) {
@@ -84,6 +97,7 @@ class App extends Component {
             for (let j = 0; j < copiedShip.size; j++) {
               copiedShip.position.push([coordinates[0] + j, coordinates[1]]);
               copyPlayerShipsCoordinates.push([coordinates[0] + j, coordinates[1]]);
+              copyPlayerShipsTracker.push([coordinates[0] + j, coordinates[1]]);
             }
           }
         } else if (this.state.direction === 'horizontal') {
@@ -98,6 +112,7 @@ class App extends Component {
             for (let j = 0; j < copiedShip.size; j++) {
               copiedShip.position.push([coordinates[0], coordinates[1] + j]);
               copyPlayerShipsCoordinates.push([coordinates[0], coordinates[1] + j]);
+              copyPlayerShipsTracker.push([coordinates[0], coordinates[1] + j]);
             }
           }
         }
@@ -107,7 +122,8 @@ class App extends Component {
           fleet: this.state.fleet + 1,
           cruiser: copiedShip,
           addShip: false,
-          playerShipsCoordinates: [...this.state.playerShipsCoordinates, ...copyPlayerShipsCoordinates]
+          playerShipsCoordinates: [...this.state.playerShipsCoordinates, ...copyPlayerShipsCoordinates],
+          playerShipsTracker: [...this.state.playerShipsTracker, ...copyPlayerShipsTracker]
         });
       } else if (typeOfShip === 'destroyer' && copiedShip.position.length !== 0) {
         this.setState({
@@ -115,7 +131,8 @@ class App extends Component {
           fleet: this.state.fleet + 1,
           destroyer: copiedShip,
           addShip: false,
-          playerShipsCoordinates: [...this.state.playerShipsCoordinates, ...copyPlayerShipsCoordinates]
+          playerShipsCoordinates: [...this.state.playerShipsCoordinates, ...copyPlayerShipsCoordinates],
+          playerShipsTracker: [...this.state.playerShipsTracker, ...copyPlayerShipsTracker]
         });
       }
     } else {
@@ -136,50 +153,88 @@ class App extends Component {
 
   gotHit (coordinates) {
     let copyPlayerHitAndMissStorage = Object.assign({}, this.state.playerHitAndMissStorage);
-    let copyPlayerShipsCoordinates = [...this.state.playerShipsCoordinates];
-    if (this.containCoordinates(copyPlayerShipsCoordinates, coordinates)) {
+    let copyPlayerShipsTracker = [...this.state.playerShipsTracker];
+    if (this.containCoordinates(copyPlayerShipsTracker, coordinates)) {
       console.log("you got hit!");
       copyPlayerHitAndMissStorage[JSON.stringify(coordinates)] = 'hit';
-      copyPlayerShipsCoordinates.splice(this.findIndexInShipList(copyPlayerShipsCoordinates, coordinates), 1);
+      copyPlayerShipsTracker.splice(this.findIndexInShipList(copyPlayerShipsTracker, coordinates), 1);
       this.setState({
         attackStatus: 'GOT HIT!',
         playerHitAndMissStorage: copyPlayerHitAndMissStorage,
-        playerShipsCoordinates: copyPlayerShipsCoordinates
+        playerShipsTracker: copyPlayerShipsTracker
       });
-      if (copyPlayerShipsCoordinates.length === 0) {
-        window.alert('All you ship sunk, YOU LOOSE!');
-        let msg = {
-          winMsg: 'you sunk all enemy, YOU WIN!'
+      if (copyPlayerShipsTracker.length === 0) {
+        window.alert('All your ship sunk, YOU LOOSE!');
+        let enemyWinMsg = {
+          enemyWinMsg: 'you sunk all enemy ships, YOU WIN!',
+          coordinates,
         };
-        socket.emit('youWin', msg);
+        socket.emit('youWin', enemyWinMsg);
+      } else {
+        let enemyHitMsg = {
+          enemyHitMsg: 'you landed a hit!',
+          coordinates,
+        };
+        socket.emit('landedHit', enemyHitMsg);
       }
+    } else {
+      console.log('enemy miss!');
+      copyPlayerHitAndMissStorage[JSON.stringify(coordinates)] = 'miss';
+      this.setState({
+        attackStatus: 'ENEMY MISS!',
+        playerHitAndMissStorage: copyPlayerHitAndMissStorage,
+        playerShipsTracker: copyPlayerShipsTracker
+      });
+      let enemyMissMsg = {
+        enemyMissMsg: 'you miss!',
+        coordinates,
+      };
+      socket.emit('noHit', enemyMissMsg);
     }
   };
 
-  hitOrMissHandler (coordinates) {
-    let copyHitAndMissStorage = Object.assign({}, this.state.hitAndMissStorage);
-    let copyEnemyShipCoordinates = [...this.state.enemyShipsCoordinates];
-    if (this.containCoordinates(this.state.enemyShipsCoordinates, coordinates)) {
-      console.log('hit!');
-      copyHitAndMissStorage[JSON.stringify(coordinates)] = 'hit';
-      copyEnemyShipCoordinates.splice(this.findIndexInShipList(copyEnemyShipCoordinates, coordinates), 1);
-      this.setState({
-        attackStatus: 'HIT!',
-        hitAndMissStorage: copyHitAndMissStorage,
-        enemyShipsCoordinates: copyEnemyShipCoordinates
-      });
-      if (copyEnemyShipCoordinates.length === 0) {
-        window.alert('You have sunk all enemy ship, you win!!');
-      }
-    } else {
-      console.log('miss!');
-      copyHitAndMissStorage[JSON.stringify(coordinates)] = 'miss';
-      this.setState({
-        attackStatus: "MISS!",
-        hitAndMissStorage: copyHitAndMissStorage
-      });
-    }
+  renderHitEnemyBoard (coordinates) {
+    let copyEnemyHitAndMissStorage = Object.assign({}, this.state.enemyHitAndMissStorage);
+    copyEnemyHitAndMissStorage[JSON.stringify(coordinates)] = 'hit';
+    this.setState({
+      attackStatus: 'HIT!',
+      enemyHitAndMissStorage: copyEnemyHitAndMissStorage
+    });
   };
+
+  renderMissEnemyBoard (coordinates) {
+    let copyEnemyHitAndMissStorage = Object.assign({}, this.state.enemyHitAndMissStorage);
+    copyEnemyHitAndMissStorage[JSON.stringify(coordinates)] = 'miss';
+    this.setState({
+      attackStatus: 'MISS!',
+      enemyHitAndMissStorage: copyEnemyHitAndMissStorage
+    });
+  };
+
+  // hitOrMissHandler (coordinates) {
+  //   let copyEnemyHitAndMissStorage = Object.assign({}, this.state.enemyHitAndMissStorage);
+  //   let copyEnemyShipCoordinates = [...this.state.enemyShipsCoordinates];
+  //   if (this.containCoordinates(this.state.enemyShipsCoordinates, coordinates)) {
+  //     console.log('hit!');
+  //     copyEnemyHitAndMissStorage[JSON.stringify(coordinates)] = 'hit';
+  //     copyEnemyShipCoordinates.splice(this.findIndexInShipList(copyEnemyShipCoordinates, coordinates), 1);
+  //     this.setState({
+  //       attackStatus: 'HIT!',
+  //       enemyHitAndMissStorage: copyEnemyHitAndMissStorage,
+  //       enemyShipsCoordinates: copyEnemyShipCoordinates
+  //     });
+  //     if (copyEnemyShipCoordinates.length === 0) {
+  //       window.alert('You have sunk all enemy ship, you win!!');
+  //     }
+  //   } else {
+  //     console.log('miss!');
+  //     copyEnemyHitAndMissStorage[JSON.stringify(coordinates)] = 'miss';
+  //     this.setState({
+  //       attackStatus: "MISS!",
+  //       enemyHitAndMissStorage: copyEnemyHitAndMissStorage
+  //     });
+  //   }
+  // };
 
   render () {
     const _opponentBoard = boardMatrix.map((rowBox, index1) =>
@@ -188,7 +243,7 @@ class App extends Component {
         key={index2}
         i={[index1, index2]}
         fireShots={this.fireShots}
-        hitAndMissStorage={this.state.hitAndMissStorage}
+        enemyHitAndMissStorage={this.state.enemyHitAndMissStorage}
         />
       )
     );
@@ -200,6 +255,7 @@ class App extends Component {
         i={[index1, index2]}
         addShipToMap={this.addShipToMap}
         fireShots={this.fireShots}
+        playerHitAndMissStorage={this.state.playerHitAndMissStorage}
         />
       )
     );
