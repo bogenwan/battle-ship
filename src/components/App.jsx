@@ -249,27 +249,37 @@ class App extends Component {
     return (
       <div className="App">
         <h1 className="title">BATTLE SHIP</h1>
-        <div className="boards-container">
-          <h1>OPPONENT'S MAP</h1>
-          <div className="opponent-board-container">
-            {_opponentBoard}
-          </div>
-          <h1>YOUR MAP</h1>
-          <div className="player-board-container">
-            {_playerBoard}
-          </div>
+        <div className="ship-select-title">
+          <h2>Place your ships</h2>
         </div>
         <div className="ship-select-container">
-          <div>
-            <h2>Place your ships</h2>
-            <h3>Cruiser x {`${this.state.cruiserCount}`}</h3>
-            <input type="button" ref="vertical" value="vertical" onClick={_crusierVertical} />
-            <input type="button" ref="horizontal" value="horizontal" onClick={_cruiserHorizontal} />
+          <div className="ship-select-container-item">
+            <h3 className="ship-select-text">Cruiser x {`${this.state.cruiserCount}`}</h3>
+            <div className="ship-input-container">
+              <input type="button" ref="vertical" value="vertical" onClick={_crusierVertical} />
+              <input type="button" ref="horizontal" value="horizontal" onClick={_cruiserHorizontal} />
+            </div>
           </div>
-          <div>
-            <h3>Destroyer x {`${this.state.destroyerCount}`}</h3>
-            <input type="button" ref="vertical" value="vertical" onClick={_destroyerVertical} />
-            <input type="button" ref="horizontal" value="horizontal" onClick={_destroyerHorizontal} />
+          <div className="ship-select-container-item">
+            <h3 className="ship-select-text">Destroyer x {`${this.state.destroyerCount}`}</h3>
+            <div className="ship-input-container">
+              <input type="button" ref="vertical" value="vertical" onClick={_destroyerVertical} />
+              <input type="button" ref="horizontal" value="horizontal" onClick={_destroyerHorizontal} />
+            </div>
+          </div>
+        </div>
+        <div className="boards-container">
+          <div className="board-container">
+            <h1 className="map-title">YOUR MAP</h1>
+            <div className="player-board-container">
+              {_playerBoard}
+            </div>
+          </div>
+          <div className="board-container">
+            <h1 className="map-title">OPPONENT'S MAP</h1>
+            <div className="opponent-board-container">
+              {_opponentBoard}
+            </div>
           </div>
         </div>
       </div>
