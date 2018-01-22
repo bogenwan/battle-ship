@@ -18,9 +18,15 @@ io.on('connection', function (socket) {
   console.log('a user socket connected!');
 
   socket.on('fire', (fireData) => {
-    console.log(fireData);
-    socket.broadcast.emit('fire', {
-      fireData,
+    socket.emit('fire', {
+      coordinates: fireData.coordinates,
+      from: socket.id.slice(8)
+    });
+  });
+
+  socket.on('youWin', (msg) => {
+    socket.emit('youWin', {
+      winMsg: msg.winMsg,
       from: socket.id.slice(8)
     });
   });
