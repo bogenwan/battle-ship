@@ -17,9 +17,12 @@ class App extends Component {
     this.state = {
       cruiser: new Ship(3, 'cruiser'),
       cruiserCount: 3,
+      cruiserId:0,
       destroyer: new Ship(4, 'destroyer'),
       destroyerCount: 2,
+      destroyerId:0,
       collide: false,
+      playerShipStorage: {},
       fleet: 0,
       direction: '',
       addShip: false,
@@ -31,7 +34,8 @@ class App extends Component {
       enemyHitAndMissStorage: {},
       initSetUp: true,
       player: '',
-      attackStatus: ''
+      attackStatus: '',
+      restartGame: false
     };
 
     this.fireShots = this.fireShots.bind(this);
@@ -42,6 +46,7 @@ class App extends Component {
     this.renderHitEnemyBoard = this.renderHitEnemyBoard.bind(this);
     this.renderMissEnemyBoard = this.renderMissEnemyBoard.bind(this);
     this.initialSetSup = this.initialSetSup.bind(this);
+    this.restartGame = this.restartGame.bind(this);
   };
 
   componentDidMount () {
@@ -51,6 +56,9 @@ class App extends Component {
     socket.on('youWin', msg => {
       window.alert(msg.enemyWinMsg)
       this.renderHitEnemyBoard(msg.coordinates);
+      this.setState({
+        restartGame: true
+      });
     });
     socket.on('landedHit', msg => {
       window.alert(msg.enemyHitMsg);
@@ -73,6 +81,10 @@ class App extends Component {
     } else {
       return null;
     }
+  };
+
+  restartGame () {
+    document.location.reload(false);
   };
 
   shipIntersectCheck (shipsCoord, currCoord) {
@@ -99,7 +111,15 @@ class App extends Component {
       window.alert('Commander, ship placement is out of board size, Please select another box!');
       return;
     }
-    let copiedShip = Object.assign({}, this.state[typeOfShip]);
+    // create new ship instance and store in to storage to keep track of each ship
+    let copiedShip
+    if (`${typeOfShip}` === 'cruiser') {
+      copiedShip = new Ship(3, 'cruiser');
+    } else if (`${typeOfShip}` === 'destroyer') {
+      copiedShip = new Ship(4, 'destroyer');
+    }
+    let copyPlayerShipStorage = Object.assign({}, this.state.playerShipStorage);
+    // keeps track of all ships on map
     let copyPlayerShipsTracker = [];
     let copyPlayerShipsCoordinates = [];
     let collide = false;
@@ -107,19 +127,24 @@ class App extends Component {
     if (this.state[`${typeOfShip}Count`] > 0) {
         if (this.state.direction === 'vertical') {
           for (let i = 0; i < copiedShip.size; i++) {
+            // make sure ship placement don't overlap
             if (this.shipIntersectCheck(this.state.playerShipsCoordinates, [coordinates[0] + i, coordinates[1]])) {
               window.alert('Commander, we can\'t have ship placement overlap another ship, please select another box!');
               collide = true;
               break;
             }
           }
-          // check if ships placement overlaps each other
+          // add ship if don't overlap
           if (!collide) {
             for (let j = 0; j < copiedShip.size; j++) {
               copiedShip.position.push([coordinates[0] + j, coordinates[1]]);
               copyPlayerShipsCoordinates.push([coordinates[0] + j, coordinates[1]]);
               copyPlayerShipsTracker.push([coordinates[0] + j, coordinates[1]]);
             }
+            copyPlayerShipStorage[`${typeOfShip}`+this.state[`${typeOfShip}`+'Id']] = copiedShip.position;
+            this.setState({
+              playerShipStorage: copyPlayerShipStorage,
+            });
           }
           // if placement is horizontal
         } else if (this.state.direction === 'horizontal') {
@@ -136,6 +161,10 @@ class App extends Component {
               copyPlayerShipsCoordinates.push([coordinates[0], coordinates[1] + j]);
               copyPlayerShipsTracker.push([coordinates[0], coordinates[1] + j]);
             }
+            copyPlayerShipStorage[`${typeOfShip}`+this.state[`${typeOfShip}`+'Id']] = copiedShip.position;
+            this.setState({
+              playerShipStorage: copyPlayerShipStorage
+            });
           }
         }
         // if ship alrady existed in list, the just add on to it
@@ -143,7 +172,7 @@ class App extends Component {
         this.setState({
           cruiserCount: this.state.cruiserCount - 1,
           fleet: this.state.fleet + 1,
-          cruiser: copiedShip,
+          cruiserId: this.state.cruiserId + 1,
           addShip: false,
           playerShipsCoordinates: [...this.state.playerShipsCoordinates, ...copyPlayerShipsCoordinates],
           playerShipsTracker: [...this.state.playerShipsTracker, ...copyPlayerShipsTracker]
@@ -153,7 +182,7 @@ class App extends Component {
         this.setState({
           destroyerCount: this.state.destroyerCount - 1,
           fleet: this.state.fleet + 1,
-          destroyer: copiedShip,
+          destroyerId: this.state.destroyerId + 1,
           addShip: false,
           playerShipsCoordinates: [...this.state.playerShipsCoordinates, ...copyPlayerShipsCoordinates],
           playerShipsTracker: [...this.state.playerShipsTracker, ...copyPlayerShipsTracker]
@@ -185,25 +214,40 @@ class App extends Component {
 
   // check is player's ship got hit
   gotHit (coordinates) {
+    let copyPlayerShipStorage = Object.assign({}, this.state.playerShipStorage);
     let copyPlayerHitAndMissStorage = Object.assign({}, this.state.playerHitAndMissStorage);
     let copyPlayerShipsTracker = [...this.state.playerShipsTracker];
     if (this.containCoordinates(copyPlayerShipsTracker, coordinates)) {
-      console.log("you got hit!");
       copyPlayerHitAndMissStorage[JSON.stringify(coordinates)] = 'hit';
       copyPlayerShipsTracker.splice(this.findIndexInShipList(copyPlayerShipsTracker, coordinates), 1);
+      // check if it hit one of player ship enough to sink it
+      for (let key in copyPlayerShipStorage) {
+        if (this.containCoordinates(copyPlayerShipStorage[key], coordinates)) {
+          window.alert(`Commander, our ${key} got hit!`);
+          copyPlayerShipStorage[key].splice(this.findIndexInShipList(copyPlayerShipStorage[key], coordinates), 1);
+          if (copyPlayerShipStorage[key].length === 0) {
+            window.alert(`Commander, enemy have sunk our ${[key]}!`);
+            delete copyPlayerShipStorage[key];
+          }
+        }
+      }
       this.setState({
         attackStatus: 'GOT HIT!',
         playerHitAndMissStorage: copyPlayerHitAndMissStorage,
-        playerShipsTracker: copyPlayerShipsTracker
+        playerShipsTracker: copyPlayerShipsTracker,
+        playerShipStorage: copyPlayerShipStorage
       });
       // if ship list have no more ship then player loose the game
       if (copyPlayerShipsTracker.length === 0) {
-        window.alert('Commander all your ships have been sunk by our enemy, YOU LOOSE!');
+        window.alert('Commander, all your ships have been sunk by our enemy, WE LOST!');
         let enemyWinMsg = {
-          enemyWinMsg: 'Commander, you have sunk all our enemy\'s ships, YOU WIN!',
+          enemyWinMsg: 'Commander, you have sunk all our enemy\'s ships, WE WON!',
           coordinates,
         };
         socket.emit('youWin', enemyWinMsg);
+        this.setState({
+          restartGame: true
+        });
       } else {
         let enemyHitMsg = {
           enemyHitMsg: 'Commander, you landed a hit on enemy\'s ship!',
@@ -247,6 +291,7 @@ class App extends Component {
   };
 
   render () {
+    console.log(this.state.playerShipStorage)
     const _opponentBoard = boardMatrix.map((rowBox, index1) =>
       boardMatrix.map((colBox, index2) =>
         <OpponentBox
@@ -281,6 +326,10 @@ class App extends Component {
     const _destroyerHorizontal = () => {
       this.setShipDirection('horizontal', 'destroyer');
     };
+    const _restartGame = () => {
+      this.restartGame();
+    };
+
     return (
       <div className="App">
         <h1 className="title">BATTLE SHIP</h1>
@@ -295,6 +344,7 @@ class App extends Component {
               <input className="input-button" type="button" ref="horizontal" value="horizontal" onClick={_cruiserHorizontal} />
             </div>
           </div>
+          <input className={this.state.restartGame ? "restart-button-show" : "restart-button-hide"} type="button" ref="restartButton" value="restart game" onClick={_restartGame} />
           <div className="ship-select-container-item">
             <h3 className="ship-select-text">Destroyer x {`${this.state.destroyerCount}`}</h3>
             <div className="ship-input-container">
