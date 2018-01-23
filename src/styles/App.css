@@ -1,6 +1,8 @@
 .App {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   background-image: url(../battleship.jpg);
   background-repeat: no-repeat;
   -webkit-background-size: cover;
@@ -24,6 +26,7 @@
   display: flex;
   flex-direction: row;
   justify-content: space-around;
+  flex-wrap: wrap;
   width: 100%;
   height: 100%;
 }
@@ -31,7 +34,6 @@
 .board-container {
   display: flex;
   flex-direction: column;
-  flex-wrap: nowrap;
   align-items: center;
 }
 
@@ -41,7 +43,7 @@
 }
 
 .opponent-board-container {
-  width: 342px;
+  width: 324px;
   display: flex;
   flex-wrap: wrap;
   background-color: white;
@@ -49,7 +51,6 @@
 
 .opponent-box-container {
   display: flex;
-  flex-direction: row;
   width: 50px;
   height: 50px;
   background-color: green;
@@ -113,6 +114,7 @@
   width: 55%;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   justify-content: space-between;
 }
 
@@ -124,10 +126,17 @@
 
 .restart-button-hide {
   visibility: hidden;
+  display: flex;
+  width: 25%;
+  justify-content: center;
+  font-size: 1em;
+  font-weight: bold;
 }
 
 .restart-button-show {
-  display: inline;
+  display: flex;
+  width: 25%;
+  justify-content: center;
   font-size: 1em;
   font-weight: bold;
   color: #6B8E23;

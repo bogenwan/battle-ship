@@ -141,7 +141,7 @@ class App extends Component {
               copyPlayerShipsCoordinates.push([coordinates[0] + j, coordinates[1]]);
               copyPlayerShipsTracker.push([coordinates[0] + j, coordinates[1]]);
             }
-            copyPlayerShipStorage[`${typeOfShip}`+this.state[`${typeOfShip}`+'Id']] = copiedShip.position;
+            copyPlayerShipStorage[`${typeOfShip}`+this.state[`${typeOfShip}Id`]] = copiedShip.position;
             this.setState({
               playerShipStorage: copyPlayerShipStorage,
             });
@@ -161,7 +161,7 @@ class App extends Component {
               copyPlayerShipsCoordinates.push([coordinates[0], coordinates[1] + j]);
               copyPlayerShipsTracker.push([coordinates[0], coordinates[1] + j]);
             }
-            copyPlayerShipStorage[`${typeOfShip}`+this.state[`${typeOfShip}`+'Id']] = copiedShip.position;
+            copyPlayerShipStorage[`${typeOfShip}`+this.state[`${typeOfShip}Id`]] = copiedShip.position;
             this.setState({
               playerShipStorage: copyPlayerShipStorage
             });
@@ -291,7 +291,6 @@ class App extends Component {
   };
 
   render () {
-    console.log(this.state.playerShipStorage)
     const _opponentBoard = boardMatrix.map((rowBox, index1) =>
       boardMatrix.map((colBox, index2) =>
         <OpponentBox
@@ -329,10 +328,12 @@ class App extends Component {
     const _restartGame = () => {
       this.restartGame();
     };
+    const _reloadButtonClass = this.state.restartGame ? "restart-button-show" : "restart-button-hide";
 
     return (
       <div className="App">
         <h1 className="title">BATTLE SHIP</h1>
+          <input className={_reloadButtonClass} type="button" ref="restartButton" value="restart game" onClick={_restartGame} />
         <div className="ship-select-title">
           <h2>Place your ships</h2>
         </div>
@@ -344,7 +345,6 @@ class App extends Component {
               <input className="input-button" type="button" ref="horizontal" value="horizontal" onClick={_cruiserHorizontal} />
             </div>
           </div>
-          <input className={this.state.restartGame ? "restart-button-show" : "restart-button-hide"} type="button" ref="restartButton" value="restart game" onClick={_restartGame} />
           <div className="ship-select-container-item">
             <h3 className="ship-select-text">Destroyer x {`${this.state.destroyerCount}`}</h3>
             <div className="ship-input-container">
