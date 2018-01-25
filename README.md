@@ -2,6 +2,8 @@
 
 >This is the most awesome game ever!
 
+![Alt text](./screenShot.jpg?raw=true "Screen Shot")
+
 ## Team
 
 - __Developer__: Johnny Kwong
